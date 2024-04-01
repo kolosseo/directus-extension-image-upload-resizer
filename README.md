@@ -11,7 +11,7 @@ The extension by default uses two `env` keys:
 `EXTENSIONS_REDUCE_ON_UPLOAD_MAXSIZE = 1920`  
 which respectively set the quality and the maximum size of the images.
 
-To customize the values, you have to set that `env` keys on your Directus instance and then restart it.
+To customize the values, you have to add/set these `env` keys on your Directus instance (and then restart it).
 
 
 ## Notes
