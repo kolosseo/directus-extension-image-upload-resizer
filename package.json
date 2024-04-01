@@ -1,12 +1,21 @@
 {
 	"name": "directus-extension-image-upload-resizer",
 	"description": "Automatically lighten and resize large images during upload",
+	"author": "jacpax",
+	"license": "GPL v2",
 	"icon": "image",
 	"version": "1.0.0",
+	"repository": {
+		"type" : "git",
+		"url" : "github:kolosseo/directus-extension-image-upload-resizer"
+	},
+	"homepage": "https://github.com/kolosseo/directus-extension-image-upload-resizer?tab=readme-ov-file#image-upload-resizer",
 	"keywords": [
 		"directus",
 		"directus-extension",
-		"directus-extension-hook"
+		"directus-extension-hook",
+		"upload",
+		"image"
 	],
 	"type": "module",
 	"files": [
