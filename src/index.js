@@ -1,4 +1,6 @@
 import path from 'path'
+import { sleep } from 'directus:api'
+
 
 export default ({ filter, action }, { services, env }) => {
 	const { AssetsService, FilesService } = services
@@ -6,7 +8,6 @@ export default ({ filter, action }, { services, env }) => {
 	const maxSize = env.EXTENSIONS_REDUCE_ON_UPLOAD_MAXSIZE || 1920
 
 	action('files.upload', async ({ payload, key }, context) => {
-console.log('XXXXXXXXXX', payload)
 		// Stop if already optimized
 		if (payload.optimized)
 			return
@@ -51,8 +52,8 @@ console.log('XXXXXXXXXX', payload)
 		const { stream, file, stat } = await assets.getAsset(key, transformation)
 
 		// Stop if new file would be bigger (useless process)
-		//if (stat.size >= payload.filesize)
-			//return
+		if (stat.size >= payload.filesize)
+			return
 
 		// Convert to "webp"
 		if (format !== 'webp') {
@@ -65,7 +66,7 @@ console.log('XXXXXXXXXX', payload)
 		delete payload.height
 		delete payload.width
 
-		await sleep(1000) // Why is this required?
+		await sleep(1000) // Just wait a bit...
 
 		// Finally upload processed and optimized file
 		await files.uploadOne(stream, {
@@ -73,9 +74,4 @@ console.log('XXXXXXXXXX', payload)
 			optimized: true
 		}, key)
 	})
-}
-
-// Just sleep...
-async function sleep(ms) {
-	return new Promise(r => setTimeout(r, ms))
 }

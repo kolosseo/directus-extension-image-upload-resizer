@@ -1,6 +1,6 @@
 {
 	"name": "directus-extension-image-upload-resizer",
-	"description": "Resize and optimize uploaded images",
+	"description": "Automatically lighten and resize large images during upload",
 	"icon": "image",
 	"version": "1.0.0",
 	"keywords": [
@@ -19,7 +19,9 @@
 		"host": "^10.10.0",
 		"sandbox": {
 			"enabled": true,
-			"requestedScopes": {}
+			"requestedScopes": {
+				"sleep": {}
+			}
 		}
 	},
 	"scripts": {
