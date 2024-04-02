@@ -24,11 +24,11 @@ export default ({ filter, action }, { services, env }) => {
 		// TODO - Improve different format's management
 		let transforms = [
 			['withMetadata'],
-			['composite', [{ // <-- if you want a watermark
-				input: __dirname+'/img/logo-reverse.png',
-				gravity: 'southeast',
-				blend: 'screen'
-			}]]
+			//['composite', [{ // <-- Watermark feature (TODO)
+				//input: __dirname+'/img/logo.png',
+				//gravity: 'southeast',
+				//blend: 'screen'
+			//}]]
 		]
 		//if (format === 'jpeg' || format === 'png')
 			//transforms.push([format, { progressive: true }])
