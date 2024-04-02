@@ -1,4 +1,3 @@
-import path from 'path'
 import { sleep } from 'directus:api'
 
 
@@ -58,8 +57,8 @@ export default ({ filter, action }, { services, env }) => {
 		// Convert to "webp"
 		if (format !== 'webp') {
 			payload.type = payload.type.replace(format, 'webp')
-			payload.filename_download = path.parse(payload.filename_download).name+'.webp'
-			payload.filename_disk = path.parse(payload.filename_disk).name+'.webp'
+			payload.filename_download = getFileName(payload.filename_download)+'.webp'
+			payload.filename_disk = getFileName(payload.filename_disk)+'.webp'
 		}
 
 		// Delete image sizes, to restore them dynamically
@@ -74,4 +73,14 @@ export default ({ filter, action }, { services, env }) => {
 			optimized: true
 		}, key)
 	})
+}
+
+
+// Alternative to "path.parse(str).name"
+// (because "path" can't be imported in a "sandboxed" env, actually)
+function getFileName(str) {
+	str = str.split('/').pop().split('.')
+	return str.length > 1
+		? str.slice(0, -1).join('.')
+		: str[0]
 }
