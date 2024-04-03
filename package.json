@@ -36,6 +36,7 @@
 	},
 	"scripts": {
 		"build": "directus-extension build",
+		"deploy": "directus-extension build && ./scripts/deploy",
 		"dev": "directus-extension build -w --no-minify",
 		"link": "directus-extension link"
 	},
