@@ -1,6 +1,3 @@
-import { sleep } from 'directus:api'
-
-
 export default ({ filter, action }, { services, env }) => {
 	const { AssetsService, FilesService } = services
 	const quality = env.EXTENSIONS_REDUCE_ON_UPLOAD_QUALITY || 73
@@ -33,22 +30,21 @@ export default ({ filter, action }, { services, env }) => {
 		//if (format === 'jpeg' || format === 'png')
 			//transforms.push([format, { progressive: true }])
 
-		const transformation = {
-			//format,
+		const transformationParams = {
 			format: 'webp',
 			quality,
 			width: maxSize,
 			height: maxSize,
 			fit: 'inside',
 			withoutEnlargement: false,
-			transforms,
+			transforms
 		}
 
 		const serviceOptions = { ...context, knex: context.database }
 		const assets = new AssetsService(serviceOptions)
 		const files = new FilesService(serviceOptions)
 		// Get transformed file
-		const { stream, file, stat } = await assets.getAsset(key, transformation)
+		const { stream, file, stat } = await assets.getAsset(key, { transformationParams })
 
 		// Stop if new file would be bigger (useless process)
 		if (stat.size >= payload.filesize)
@@ -83,4 +79,9 @@ function getFileName(str) {
 	return str.length > 1
 		? str.slice(0, -1).join('.')
 		: str[0]
+}
+
+// Just sleep...
+async function sleep(ms) {
+	return new Promise(r => setTimeout(r, ms))
 }

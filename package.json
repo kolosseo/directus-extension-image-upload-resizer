@@ -4,12 +4,12 @@
 	"author": "jacpax",
 	"license": "GPL v2",
 	"icon": "image",
-	"version": "1.0.5",
+	"version": "1.1.0",
 	"repository": {
 		"type" : "git",
 		"url" : "github:kolosseo/directus-extension-image-upload-resizer"
 	},
-	"homepage": "https://github.com/kolosseo/directus-extension-image-upload-resizer?tab=readme-ov-file#image-upload-resizer",
+	"homepage": "https://www.npmjs.com/package/directus-extension-image-upload-resizer",
 	"keywords": [
 		"directus",
 		"directus-extension",
@@ -28,9 +28,10 @@
 		"source": "src/index.js",
 		"host": "^10.10.0",
 		"sandbox": {
-			"enabled": true,
+			"enabled": false,
 			"requestedScopes": {
-				"sleep": {}
+				"sleep": {},
+				"log": {}
 			}
 		}
 	},
