@@ -6,13 +6,17 @@ That can be a helpful tool to optimize server space.
 
 
 ## Settings
-The extension by default uses two `env` keys:  
+The extension by default uses two `env` variables:  
 `EXTENSIONS_REDUCE_ON_UPLOAD_QUALITY = 73`  
 `EXTENSIONS_REDUCE_ON_UPLOAD_MAXSIZE = 1920`  
 which respectively set the quality and the maximum size of the images.
 
-To customize the values, you have to add/set these `env` keys on your Directus instance (and then restart it).
+To customize the values, you have to add/set these `env` variables on your Directus instance (and then restart it).
 
 
 ## Notes
-This extension actually converts from the following formats only: _jpeg_, _png_, _webp_.
+- This extension actually converts from the following formats only: _jpeg_, _png_, _webp_.
+- This actual version fixed previous bugs and now works correctly with Directus 10.10
+
+## Credits
+To [Christian Fuss](https://github.com/directus/directus/discussions/8704#discussioncomment-2820302)
