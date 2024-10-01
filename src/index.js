@@ -61,10 +61,10 @@ export default ({ filter, action }, { services, env }) => {
 		delete payload.height
 		delete payload.width
 
-		await sleep(1000) // Just wait a bit...
+		await sleep(4000) // Just wait a bit...
 
 		// Finally upload processed and optimized file
-		await files.uploadOne(stream, {
+		files.uploadOne(stream, {
 			...payload,
 			optimized: true
 		}, key)
