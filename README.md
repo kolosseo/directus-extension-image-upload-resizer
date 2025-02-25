@@ -16,7 +16,8 @@ To customize the values, you have to add/set these `env` variables on your Direc
 
 ## Notes
 - This extension actually converts from the following formats only: _jpeg_, _png_, _webp_.
-- The actual version is tested working with Directus 10.13.
+- Fixed crashing bugs during upload
+- The actual version is tested working with Directus 11.
 
 ## Credits
 To [Christian Fuss](https://github.com/directus/directus/discussions/8704#discussioncomment-2820302)
