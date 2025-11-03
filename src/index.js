@@ -40,7 +40,11 @@ export default ({ filter, action }, { services, env }) => {
 			transforms
 		}
 
-		const serviceOptions = { ...context, knex: context.database }
+		const serviceOptions = {
+			accountability: { admin: true },
+			knex: context.database,
+			...context
+		}
 		const assets = new AssetsService(serviceOptions)
 		const files = new FilesService(serviceOptions)
 		// Get transformed file
