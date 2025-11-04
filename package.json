@@ -4,7 +4,7 @@
 	"author": "jacpax",
 	"license": "GPL v2",
 	"icon": "image",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"repository": {
 		"type" : "git",
 		"url" : "github:kolosseo/directus-extension-image-upload-resizer"
