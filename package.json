@@ -26,7 +26,7 @@
 		"type": "hook",
 		"path": "dist/index.js",
 		"source": "src/index.js",
-		"host": "^11.12.0",
+		"host": "^9.0.0 <=11.12.0",
 		"sandbox": {
 			"enabled": false,
 			"requestedScopes": {
