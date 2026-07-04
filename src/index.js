@@ -1,91 +1,79 @@
-export default ({ filter, action }, { services, env }) => {
-	const { AssetsService, FilesService } = services
-	const quality = env.EXTENSIONS_REDUCE_ON_UPLOAD_QUALITY || 73
-	const maxSize = env.EXTENSIONS_REDUCE_ON_UPLOAD_MAXSIZE || 1920
+export default function registerHook({action}, {services, env}) {
+	const {AssetsService, FilesService} = services
+	const quality = parseInt(env.EXTENSIONS_IMAGE_UPLOAD_RESIZE_QUALITY ?? '73', 10)
+	const maxSize = parseInt(env.EXTENSIONS_IMAGE_UPLOAD_RESIZE_MAXSIZE ?? '1920', 10)
+	const keepMetadata = env.EXTENSIONS_IMAGE_UPLOAD_RESIZE_KEEP_METADATA === 'true'
+	const formats = ['jpeg', 'png', 'webp']
 
-	action('files.upload', async ({ payload, key }, context) => {
-		// Stop if already optimized
-		if (payload.optimized)
-			return
+	action('files.upload', async function onFileUpload({key, payload}, eventContext) {
+		try {
+			// Skip files already processed by this hook
+			if (payload.optimized) return
 
-		// Get file type and format (i.e. "image/jpeg")
-		const [ filetype, format ] = payload.type.split('/') ?? ''
+			const serviceOptions = {
+				schema: eventContext.schema,
+				accountability: {admin: true},
+				knex: eventContext.database
+			}
 
-		// Stop if not handled
-		if (filetype !== 'image'
-		 && format !== 'jpeg'
-		 && format !== 'webp'
-		 && format !== 'png')
-			return
+			const filesService = new FilesService(serviceOptions)
 
-		// TODO - Improve different format's management
-		let transforms = [
-			['withMetadata'],
-			//['composite', [{ // <-- Watermark feature (TODO)
-				//input: __dirname+'/img/logo.png',
-				//gravity: 'southeast',
-				//blend: 'screen'
-			//}]]
-		]
-		//if (format === 'jpeg' || format === 'png')
-			//transforms.push([format, { progressive: true }])
+			// Read the full record instead of trusting the payload,
+			// since it does not always include every field (e.g. filename_disk)
+			const file = await filesService.readOne(key, {
+				fields: ['id', 'type', 'filename_disk', 'filename_download', 'filesize']
+			})
 
-		const transformationParams = {
-			format: 'webp',
-			quality,
-			width: maxSize,
-			height: maxSize,
-			fit: 'inside',
-			withoutEnlargement: false,
-			transforms
+			// Only handle JPG/PNG images that are not already WebP
+			if (!file.type || !file.type.startsWith('image/')) return
+			const format = file.type.split('/')[1]
+			if (!formats.includes(format)) return
+
+			const assetsService = new AssetsService(serviceOptions)
+
+			const transformationParams = {
+				format: 'webp',
+				quality,
+				width: maxSize,
+				height: maxSize,
+				fit: 'inside',
+				withoutEnlargement: true,
+				// EXIF/GPS data gets stripped by default
+				// to enable metadata set `env.EXTENSIONS_REDUCE_ON_UPLOAD_KEEP_METADATA`
+				withMetadata: keepMetadata
+			}
+
+			// Let Directus run the transformation through its own sharp instance,
+			// storage-agnostic (works with local, S3, GCS, Azure, ...)
+			const {stream, stat} = await assetsService.getAsset(key, {transformationParams})
+
+			// Skip if the converted file would not actually be smaller
+			if (stat.size >= file.filesize) return
+
+			const newFilenameDownload = getFileName(file.filename_download)
+			const newFilenameDisk = getFileName(file.filename_disk)
+
+			// Upload the processed file back through the standard pipeline,
+			// width/height are omitted so Directus recalculates them automatically
+			await filesService.uploadOne(stream, {
+				type: 'image/webp',
+				filename_download: newFilenameDownload,
+				filename_disk: newFilenameDisk,
+				optimized: true
+			}, key)
+
+			console.log('[ReduceOnUpload] success: ' + file.filename_download + ' -> WebP (' + Math.round(stat.size / 1024) + ' kB)')
+		} catch (err) {
+			console.error('[ReduceOnUpload] error during transformation:', err)
 		}
-
-		const serviceOptions = {
-			accountability: { admin: true },
-			knex: context.database,
-			...context
-		}
-		const assets = new AssetsService(serviceOptions)
-		const files = new FilesService(serviceOptions)
-		// Get transformed file
-		const { stream, file, stat } = await assets.getAsset(key, { transformationParams })
-
-		// Stop if new file would be bigger (useless process)
-		if (stat.size >= payload.filesize)
-			return
-
-		// Convert to "webp"
-		if (format !== 'webp') {
-			payload.type = payload.type.replace(format, 'webp')
-			payload.filename_download = getFileName(payload.filename_download)+'.webp'
-			payload.filename_disk = getFileName(payload.filename_disk)+'.webp'
-		}
-
-		// Delete image sizes, to restore them dynamically
-		delete payload.height
-		delete payload.width
-
-		await sleep(4000) // Just wait a bit...
-
-		// Finally upload processed and optimized file
-		files.uploadOne(stream, {
-			...payload,
-			optimized: true
-		}, key)
 	})
 }
 
-
-// Alternative to "path.parse(str).name"
-// (because "path" can't be imported in a "sandboxed" env, actually)
+// Alternative to "path.parse(str).name",
+// since "path" cannot be imported in a sandboxed environment
 function getFileName(str) {
-	str = str.split('/').pop().split('.')
-	return str.length > 1
-		? str.slice(0, -1).join('.')
-		: str[0]
-}
-
-// Just sleep...
-async function sleep(ms) {
-	return new Promise(r => setTimeout(r, ms))
+	const parts = str.split('/').pop().split('.')
+	return parts.length > 1
+		? parts.slice(0, -1).join('.')
+		: parts[0]
 }
