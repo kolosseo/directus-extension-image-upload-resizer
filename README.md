@@ -7,9 +7,9 @@ That can be a helpful tool to optimize server space.
 
 ## Settings
 The extension by default uses three `env` variables:
-`EXTENSIONS_IMAGE_UPLOAD_RESIZE_QUALITY = 73`
-`EXTENSIONS_IMAGE_UPLOAD_RESIZE_MAXSIZE = 1920`
-`EXTENSIONS_IMAGE_UPLOAD_RESIZE_KEEP_METADATA = false`
+`EXTENSIONS_IMAGE_UPLOAD_RESIZER_QUALITY = 73`
+`EXTENSIONS_IMAGE_UPLOAD_RESIZER_MAXSIZE = 1920`
+`EXTENSIONS_IMAGE_UPLOAD_RESIZER_KEEP_METADATA = false`
 which respectively set the quality, the maximum size and the keeping of metadata (EXIF/GPS) about the new converted images.
 
 Directus also uses the following [env variables to manage images](https://directus.com/docs/configuration/files):

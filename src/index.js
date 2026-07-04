@@ -1,8 +1,8 @@
 export default function registerHook({action}, {services, env}) {
 	const {AssetsService, FilesService} = services
-	const quality = parseInt(env.EXTENSIONS_IMAGE_UPLOAD_RESIZE_QUALITY ?? '73', 10)
-	const maxSize = parseInt(env.EXTENSIONS_IMAGE_UPLOAD_RESIZE_MAXSIZE ?? '1920', 10)
-	const keepMetadata = env.EXTENSIONS_IMAGE_UPLOAD_RESIZE_KEEP_METADATA === 'true'
+	const quality = parseInt(env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_QUALITY ?? '73', 10)
+	const maxSize = parseInt(env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_MAXSIZE ?? '1920', 10)
+	const keepMetadata = env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_KEEP_METADATA === 'true'
 	const formats = ['jpeg', 'png', 'webp']
 
 	action('files.upload', async function onFileUpload({key, payload}, eventContext) {
@@ -39,7 +39,7 @@ export default function registerHook({action}, {services, env}) {
 				fit: 'inside',
 				withoutEnlargement: true,
 				// EXIF/GPS data gets stripped by default
-				// to enable metadata set `env.EXTENSIONS_REDUCE_ON_UPLOAD_KEEP_METADATA`
+				// to enable metadata set `env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_KEEP_METADATA`
 				withMetadata: keepMetadata
 			}
 
