@@ -3,7 +3,10 @@ export default function registerHook({action}, {services, env}) {
 	const quality = parseInt(env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_QUALITY ?? '73', 10)
 	const maxSize = parseInt(env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_MAXSIZE ?? '1920', 10)
 	const keepMetadata = env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_KEEP_METADATA === 'true'
-	const formats = ['jpeg', 'png', 'webp']
+	// NOTE: 'heic'/'heif' decoding requires a libvips build compiled
+	// with libheif support (not included in the default sharp binary).
+	// See: https://sharp.pixelplumbing.com/api-output/#heif
+	const formats = ['jpeg', 'png', 'webp', 'heic', 'heif']
 
 	action('files.upload', async function onFileUpload({key, payload}, eventContext) {
 		try {
@@ -24,7 +27,7 @@ export default function registerHook({action}, {services, env}) {
 				fields: ['id', 'type', 'filename_disk', 'filename_download', 'filesize']
 			})
 
-			// Only handle JPG/PNG images that are not already WebP
+			// Only handle JPG/PNG/HEIC/HEIF images that are not already WebP
 			if (!file.type || !file.type.startsWith('image/')) return
 			const format = file.type.split('/')[1]
 			if (!formats.includes(format)) return
@@ -45,6 +48,8 @@ export default function registerHook({action}, {services, env}) {
 
 			// Let Directus run the transformation through its own sharp instance,
 			// storage-agnostic (works with local, S3, GCS, Azure, ...)
+			// If the server's libvips build lacks libheif support, this call
+			// throws for HEIC/HEIF sources and is caught below.
 			const {stream, stat} = await assetsService.getAsset(key, {transformationParams})
 
 			// Skip if the converted file would not actually be smaller
