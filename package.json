@@ -28,11 +28,7 @@
 		"source": "src/index.js",
 		"host": "^9.0.0 <=12.1.1",
 		"sandbox": {
-			"enabled": false,
-			"requestedScopes": {
-				"sleep": {},
-				"log": {}
-			}
+			"enabled": false
 		}
 	},
 	"scripts": {
