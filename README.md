@@ -26,9 +26,25 @@ To customize the previous values, you have to add/set these `env` variables on y
 
 
 ## Notes
-- This extension actually resizes and converts images from the following formats only: _jpeg_, _png_, _webp_.
+- This extension actually resizes and converts images from the following formats only: _jpeg_, _png_, _webp_, _tiff_, _heic_, _heif_.
 - The code was heavily rewritten to fix crashing bugs during upload and to improve performances.
 - The actual version is tested working with Directus 12.
+
+## HEIC/HEIF support
+iPhone photos (`.heic`) are HEVC-encoded: Directus refuses to transform them (they are not in its internal `SUPPORTED_IMAGE_TRANSFORM_FORMATS` whitelist) and the prebuilt sharp/libvips cannot decode HEVC either (AV1-only build, patent reasons). This extension therefore:
+
+1. fetches the original file untouched via `AssetsService` (storage-agnostic);
+2. decodes it with [heic-decode](https://www.npmjs.com/package/heic-decode) (libheif compiled to WASM, bundled into `dist/index.js` — no server changes needed);
+3. resizes and encodes to WebP with the sharp instance already installed by Directus (marked as external in `extension.config.js`).
+
+Caveats:
+- `EXTENSIONS_IMAGE_UPLOAD_RESIZER_KEEP_METADATA` has no effect on HEIC sources: the WASM decoder outputs raw pixels, so EXIF/GPS metadata cannot be carried over. Orientation is preserved (libheif applies it during decode).
+- `ASSETS_TRANSFORM_IMAGE_MAX_DIMENSION` and `ASSETS_TRANSFORM_TIMEOUT` do NOT apply to the HEIC path (it bypasses Directus' transform pipeline); decoding a 12 MP HEIC to raw RGBA takes ~50 MB of RAM for a short time.
+
+To test the pipeline locally against the compiled bundle:
+```bash
+pnpm install && pnpm build && node scripts/test-heic.mjs
+```
 
 ## Credits
 To [Christian Fuss](https://github.com/directus/directus/discussions/8704#discussioncomment-2820302)
