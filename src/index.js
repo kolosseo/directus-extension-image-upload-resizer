@@ -164,7 +164,7 @@ export default function registerHook({action}, {services, env}) {
 	})
 }
 
-// Alternative to "path.parse(str).name"
+// Alternative to "path.parse(str).name" (useful for "sandbox" mode)
 function getFileName(str) {
 	const parts = str.split('/').pop().split('.')
 	return parts.length > 1
