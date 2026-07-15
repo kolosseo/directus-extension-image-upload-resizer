@@ -4,10 +4,10 @@
 	"author": "jacpax",
 	"license": "GPL v2",
 	"icon": "image",
-	"version": "2.1.1",
+	"version": "2.1.4",
 	"repository": {
 		"type": "git",
-		"url": "github:kolosseo/directus-extension-image-upload-resizer"
+		"url": "git+https://github.com/kolosseo/directus-extension-image-upload-resizer.git"
 	},
 	"homepage": "https://www.npmjs.com/package/directus-extension-image-upload-resizer",
 	"keywords": [

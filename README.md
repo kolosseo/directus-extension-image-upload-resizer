@@ -16,9 +16,9 @@ which respectively set the quality, the maximum size and the keeping of metadata
 
 Directus also uses the following [env variables to manage images](https://directus.com/docs/configuration/files):
 - `ASSETS_TRANSFORM_IMAGE_MAX_DIMENSION = 6000`
-	The max pixel dimensions size (width/height) that is allowed to be transformed*.
-`- ASSETS_TRANSFORM_TIMEOUT = 7500ms`
-	Max time spent trying to transform an asset*.  
+  the maximum pixel size (width/height) that is allowed to be transformed*.
+- `ASSETS_TRANSFORM_TIMEOUT = 7500ms`
+  max time spent trying to transform an asset*.  
 \* Variables not applied to HEIC source files (read "Notes and caveats" section below).
 
 If you consider working with particularly large images (professional photography, high-resolution scans), I recommend increasing `ASSETS_TRANSFORM_IMAGE_MAX_DIMENSION` and adjusting `ASSETS_TRANSFORM_TIMEOUT` accordingly; otherwise, those files will simply be discarded by the hook (safely, but still not converted).  
