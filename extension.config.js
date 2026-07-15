@@ -17,10 +17,10 @@ export default {
 	plugins: [
 		{
 			name: 'external-sharp-and-cjs-shim',
-			options(inputOptions) {
-				const external = Array.isArray(inputOptions.external) ? inputOptions.external : []
-				inputOptions.external = [...external, 'sharp']
-			},
+			//options(inputOptions) {
+				//const external = Array.isArray(inputOptions.external) ? inputOptions.external : []
+				//inputOptions.external = [...external, 'sharp']
+			//},
 			banner: () => cjsShim
 		}
 	]
