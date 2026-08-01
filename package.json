@@ -26,7 +26,7 @@
 		"type": "hook",
 		"path": "dist/index.js",
 		"source": "src/index.js",
-		"host": "^9.0.0 <=12.1.1",
+		"host": ">=9.0.0 <=12.1.1",
 		"sandbox": {
 			"enabled": false
 		}
