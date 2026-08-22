@@ -4,7 +4,7 @@
 	"author": "jacpax",
 	"license": "GPL v2",
 	"icon": "image",
-	"version": "2.1.4",
+	"version": "2.2.0",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/kolosseo/directus-extension-image-upload-resizer.git"
@@ -22,14 +22,12 @@
 	"files": [
 		"dist"
 	],
+	"main": "dist/index.js",
 	"directus:extension": {
 		"type": "hook",
 		"path": "dist/index.js",
 		"source": "src/index.js",
-		"host": ">=9.0.0 <=12.1.1",
-		"sandbox": {
-			"enabled": false
-		}
+		"host": ">=9.0.0 <=12.3.0"
 	},
 	"scripts": {
 		"build": "directus-extension build",

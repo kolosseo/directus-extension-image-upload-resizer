@@ -46,17 +46,24 @@ function loadSharp() {
 
 export default function registerHook({action}, {services, env}) {
 	const {AssetsService, FilesService} = services
-	const quality = parseInt(env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_QUALITY ?? '73', 10)
+	const qualityWebp = env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_QUALITY_WEBP
+		? parseInt(env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_QUALITY_WEBP, 10)
+		: parseInt(env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_QUALITY ?? '73', 10) // Backward compatibility with EXTENSIONS_IMAGE_UPLOAD_RESIZER_QUALITY (deprecated)
+	const qualityAvif = parseInt(env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_QUALITY_AVIF ?? '44', 10)
 	const maxSize = parseInt(env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_MAXSIZE ?? '1920', 10)
 	const keepMetadata = env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_KEEP_METADATA === 'true'
+	const allowedFormats = ['webp', 'avif']
+	const outputFormat = allowedFormats.includes(env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_FORMAT?.toLowerCase())
+		? env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_FORMAT.toLowerCase()
+		: 'avif'
 	// Formats handled natively by Directus' own transformation pipeline
-	const directusFormats = ['jpeg', 'png', 'webp', 'tiff']
+	const directusFormats = ['jpeg', 'png', 'webp', 'avif', 'tiff']
 	// Formats Directus refuses to transform (not in its internal
 	// SUPPORTED_IMAGE_TRANSFORM_FORMATS whitelist): handled manually below.
 	// Real iPhone .heic files are HEVC-encoded, which the prebuilt
 	// sharp/libvips cannot decode either (AV1-only build), so decoding
 	// is done via the bundled libheif WASM (heic-decode) and only the
-	// resize + WebP encode is delegated to sharp.
+	// resize + WebP/AVIF encode is delegated to sharp.
 	const heicFormats = ['heic', 'heif']
 
 	// Lazy + cached so a resolution failure degrades gracefully
@@ -110,22 +117,28 @@ export default function registerHook({action}, {services, env}) {
 				// sharp receives raw pixels (keepMetadata has no effect).
 				const {width, height, data} = await decode({buffer: Buffer.concat(chunks)})
 
-				const buffer = await sharp(Buffer.from(data), {raw: {width, height, channels: 4}})
+				let sharpInstance = sharp(Buffer.from(data), {raw: {width, height, channels: 4}})
 					.resize({
 						width: maxSize,
 						height: maxSize,
 						fit: 'inside',
 						withoutEnlargement: true
 					})
-					.webp({quality})
-					.toBuffer()
+
+				if (outputFormat === 'avif') {
+					sharpInstance = sharpInstance.avif({quality: qualityAvif})
+				} else {
+					sharpInstance = sharpInstance.webp({quality: qualityWebp})
+				}
+
+				const buffer = await sharpInstance.toBuffer()
 
 				stream = Readable.from(buffer)
 				newSize = buffer.length
 			} else {
 				const transformationParams = {
-					format: 'webp',
-					quality,
+					format: outputFormat,
+					quality: outputFormat === 'avif' ? qualityAvif : qualityWebp,
 					width: maxSize,
 					height: maxSize,
 					fit: 'inside',
@@ -151,13 +164,13 @@ export default function registerHook({action}, {services, env}) {
 			// Upload the processed file back through the standard pipeline,
 			// width/height are omitted so Directus recalculates them automatically
 			await filesService.uploadOne(stream, {
-				type: 'image/webp',
+				type: `image/${outputFormat}`,
 				filename_download: newFilenameDownload,
 				filename_disk: newFilenameDisk,
 				optimized: true
 			}, key)
 
-			console.log('[ReduceOnUpload] success: ' + file.filename_download + ' -> WebP (' + Math.round(newSize / 1024) + ' kB)')
+			console.log(`[ReduceOnUpload] success: ${file.filename_download} -> ${outputFormat.toUpperCase()} (${Math.round(newSize / 1024)} kB)`)
 		} catch (err) {
 			console.error('[ReduceOnUpload] error during transformation:', err)
 		}
