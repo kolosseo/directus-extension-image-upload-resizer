@@ -17,6 +17,7 @@ By default, the extension uses the following environment variables:
 - `EXTENSIONS_IMAGE_UPLOAD_RESIZER_QUALITY_WEBP = 73`
 - `EXTENSIONS_IMAGE_UPLOAD_RESIZER_MAXSIZE = 1920`
 - `EXTENSIONS_IMAGE_UPLOAD_RESIZER_KEEP_METADATA = false`
+- `EXTENSIONS_IMAGE_UPLOAD_RESIZER_SKIP_SMALL_IMAGES = false`
 
 These variables respectively control:
 
@@ -25,6 +26,7 @@ These variables respectively control:
 - the quality of WebP output files;
 - the maximum width or height, in pixels;
 - whether metadata* such as EXIF and GPS information should be preserved in the converted images.
+- whether images that are already below the maximum dimensions (width and height) will be left unchanged (no format conversion or resizing).
 
 The deprecated `EXTENSIONS_IMAGE_UPLOAD_RESIZER_QUALITY` variable remains supported for backward compatibility and continues to control the quality of WebP output files. New configurations should use `EXTENSIONS_IMAGE_UPLOAD_RESIZER_QUALITY_WEBP` instead.
 

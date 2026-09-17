@@ -51,7 +51,8 @@ export default function registerHook({action}, {services, env}) {
 		: parseInt(env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_QUALITY ?? '73', 10) // Backward compatibility with EXTENSIONS_IMAGE_UPLOAD_RESIZER_QUALITY (deprecated)
 	const qualityAvif = parseInt(env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_QUALITY_AVIF ?? '44', 10)
 	const maxSize = parseInt(env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_MAXSIZE ?? '1920', 10)
-	const keepMetadata = env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_KEEP_METADATA === 'true'
+	const keepMetadata = env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_KEEP_METADATA === true
+	const skipSmallImages = env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_SKIP_SMALL_IMAGES === true
 	const allowedFormats = ['webp', 'avif']
 	const outputFormat = allowedFormats.includes(env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_FORMAT?.toLowerCase())
 		? env.EXTENSIONS_IMAGE_UPLOAD_RESIZER_FORMAT.toLowerCase()
@@ -87,7 +88,7 @@ export default function registerHook({action}, {services, env}) {
 			// Read the full record instead of trusting the payload,
 			// since it does not always include every field (e.g. filename_disk)
 			const file = await filesService.readOne(key, {
-				fields: ['id', 'type', 'filename_disk', 'filename_download', 'filesize']
+				fields: ['id', 'type', 'filename_disk', 'filename_download', 'filesize', 'width', 'height']
 			})
 
 			// Only handle known image formats
@@ -117,6 +118,11 @@ export default function registerHook({action}, {services, env}) {
 				// sharp receives raw pixels (keepMetadata has no effect).
 				const {width, height, data} = await decode({buffer: Buffer.concat(chunks)})
 
+				// Skip processing if the image is already small and the flag is enabled
+				if (skipSmallImages && width <= maxSize && height <= maxSize) {
+					return
+				}
+
 				let sharpInstance = sharp(Buffer.from(data), {raw: {width, height, channels: 4}})
 					.resize({
 						width: maxSize,
@@ -136,6 +142,20 @@ export default function registerHook({action}, {services, env}) {
 				stream = Readable.from(buffer)
 				newSize = buffer.length
 			} else {
+				// If skipping small images is enabled, check if we should skip processing.
+				// width/height come straight from the file record fetched above —
+				// Directus already extracted them on upload, so there's no need to
+				// re-download the original and run it through sharp just to peek at them.
+				if (skipSmallImages) {
+					const width = file.width ?? 0
+					const height = file.height ?? 0
+					console.log(`[ReduceOnUpload] file.width = ${width}`)
+					console.log(`[ReduceOnUpload] file.height = ${height}`)
+					if (width <= maxSize && height <= maxSize) {
+						return
+					}
+				}
+
 				const transformationParams = {
 					format: outputFormat,
 					quality: outputFormat === 'avif' ? qualityAvif : qualityWebp,
